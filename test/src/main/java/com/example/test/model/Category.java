@@ -1,6 +1,8 @@
 package com.example.test.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,8 +11,10 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-@Table(name = "categories")
-public class Category {
+@Table(name = "mainCategory")
+public class MainCategory {
+
     @Id
-    private Long categoryId;
+    private String mainCategoryTitle;
+
 }
