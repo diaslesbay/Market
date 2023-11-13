@@ -1,7 +1,9 @@
 package com.example.test.enums;
 
+import java.util.Optional;
+
 public enum TypeOfUser {
-    NOT_REGISTERED_USER,
     REGISTERED_USER,
-    ADMIN
+    ADMIN;
+
 }

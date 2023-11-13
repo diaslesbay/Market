@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>DATABASE</ID>
+  <OriginalElement>604641f6-1b21-477f-8a39-1c20bc347830</OriginalElement>
+  <nodes>
+    <node x="638.3299549549549" y="-442.5">604641f6-1b21-477f-8a39-1c20bc347830.TABLE:test_db.public.sellers</node>
+    <node x="-298.50337837837816" y="-499.5">604641f6-1b21-477f-8a39-1c20bc347830.TABLE:test_db.public.users</node>
+    <node x="-644.0" y="-160.0">604641f6-1b21-477f-8a39-1c20bc347830.TABLE:test_db.public.cards</node>
+    <node x="-653.0" y="224.5">604641f6-1b21-477f-8a39-1c20bc347830.TABLE:test_db.public.credits</node>
+    <node x="112.6632882882891" y="-474.5">604641f6-1b21-477f-8a39-1c20bc347830.TABLE:test_db.public.payments</node>
+    <node x="805.6373873873874" y="208.0">604641f6-1b21-477f-8a39-1c20bc347830.TABLE:test_db.public.quantity_products</node>
+    <node x="73.13682432432444" y="-88.0">604641f6-1b21-477f-8a39-1c20bc347830.TABLE:test_db.public.orders</node>
+    <node x="139.38682432432444" y="208.5">604641f6-1b21-477f-8a39-1c20bc347830.TABLE:test_db.public.order_products</node>
+    <node x="579.4966216216217" y="228.0">604641f6-1b21-477f-8a39-1c20bc347830.TABLE:test_db.public.weight_product</node>
+    <node x="623.3299549549549" y="-136.0">604641f6-1b21-477f-8a39-1c20bc347830.TABLE:test_db.public.products</node>
+    <node x="385.496621621622" y="-462.5">604641f6-1b21-477f-8a39-1c20bc347830.TABLE:test_db.public.categories</node>
+    <node x="-235.00337837837813" y="224.5">604641f6-1b21-477f-8a39-1c20bc347830.TABLE:test_db.public.reviews</node>
+    <node x="933.4966216216216" y="-429.5">604641f6-1b21-477f-8a39-1c20bc347830.TABLE:test_db.public.sales</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="604641f6-1b21-477f-8a39-1c20bc347830.TABLE:test_db.public.weight_product" target="604641f6-1b21-477f-8a39-1c20bc347830.TABLE:test_db.public.products" relationship="REFERENCES">
+      <point x="0.0" y="-44.0" />
+      <point x="664.4966216216217" y="96.0" />
+      <point x="0.0" y="116.0" />
+    </edge>
+    <edge source="604641f6-1b21-477f-8a39-1c20bc347830.TABLE:test_db.public.reviews" target="604641f6-1b21-477f-8a39-1c20bc347830.TABLE:test_db.public.products" relationship="REFERENCES">
+      <point x="44.99999999999997" y="-92.0" />
+      <point x="-100.00337837837816" y="404.0" />
+      <point x="529.4966216216218" y="404.0" />
+      <point x="529.4966216216218" y="96.0" />
+      <point x="0.0" y="116.0" />
+    </edge>
+    <edge source="604641f6-1b21-477f-8a39-1c20bc347830.TABLE:test_db.public.products" target="604641f6-1b21-477f-8a39-1c20bc347830.TABLE:test_db.public.categories" relationship="REFERENCES">
+      <point x="-82.33333333333326" y="-116.0" />
+      <point x="664.4966216216217" y="-150.0" />
+      <point x="495.496621621622" y="-150.0" />
+      <point x="0.0" y="56.0" />
+    </edge>
+    <edge source="604641f6-1b21-477f-8a39-1c20bc347830.TABLE:test_db.public.cards" target="604641f6-1b21-477f-8a39-1c20bc347830.TABLE:test_db.public.users" relationship="REFERENCES">
+      <point x="0.0" y="-116.0" />
+      <point x="-530.5" y="-305.0" />
+      <point x="-190.00337837837816" y="-305.0" />
+      <point x="0.0" y="128.0" />
+    </edge>
+    <edge source="604641f6-1b21-477f-8a39-1c20bc347830.TABLE:test_db.public.quantity_products" target="604641f6-1b21-477f-8a39-1c20bc347830.TABLE:test_db.public.products" relationship="REFERENCES">
+      <point x="1.1368683772161603E-13" y="-44.0" />
+      <point x="898.1373873873875" y="-6.0" />
+      <point x="746.8299549549549" y="-6.0" />
+      <point x="0.0" y="116.0" />
+    </edge>
+    <edge source="604641f6-1b21-477f-8a39-1c20bc347830.TABLE:test_db.public.order_products" target="604641f6-1b21-477f-8a39-1c20bc347830.TABLE:test_db.public.products" relationship="REFERENCES">
+      <point x="40.25" y="-43.5" />
+      <point x="260.13682432432444" y="252.0" />
+      <point x="415.13682432432444" y="252.0" />
+      <point x="415.13682432432444" y="24.0" />
+      <point x="746.8299549549549" y="24.0" />
+      <point x="0.0" y="116.0" />
+    </edge>
+    <edge source="604641f6-1b21-477f-8a39-1c20bc347830.TABLE:test_db.public.credits" target="604641f6-1b21-477f-8a39-1c20bc347830.TABLE:test_db.public.cards" relationship="REFERENCES">
+      <point x="0.0" y="-80.0" />
+      <point x="0.0" y="116.0" />
+    </edge>
+    <edge source="604641f6-1b21-477f-8a39-1c20bc347830.TABLE:test_db.public.order_products" target="604641f6-1b21-477f-8a39-1c20bc347830.TABLE:test_db.public.orders" relationship="REFERENCES">
+      <point x="-40.25" y="-43.5" />
+      <point x="0.0" y="80.0" />
+    </edge>
+    <edge source="604641f6-1b21-477f-8a39-1c20bc347830.TABLE:test_db.public.products" target="604641f6-1b21-477f-8a39-1c20bc347830.TABLE:test_db.public.sales" relationship="REFERENCES">
+      <point x="82.33333333333326" y="-116.0" />
+      <point x="829.1632882882882" y="-150.0" />
+      <point x="1041.9966216216217" y="-150.0" />
+      <point x="0.0" y="68.0" />
+    </edge>
+    <edge source="604641f6-1b21-477f-8a39-1c20bc347830.TABLE:test_db.public.orders" target="604641f6-1b21-477f-8a39-1c20bc347830.TABLE:test_db.public.users" relationship="REFERENCES">
+      <point x="-53.25" y="-80.0" />
+      <point x="126.38682432432444" y="-9.5" />
+      <point x="-26.113175675675564" y="-9.5" />
+      <point x="-26.113175675675564" y="-305.0" />
+      <point x="-190.00337837837816" y="-305.0" />
+      <point x="0.0" y="128.0" />
+    </edge>
+    <edge source="604641f6-1b21-477f-8a39-1c20bc347830.TABLE:test_db.public.orders" target="604641f6-1b21-477f-8a39-1c20bc347830.TABLE:test_db.public.payments" relationship="REFERENCES">
+      <point x="53.25" y="-80.0" />
+      <point x="232.88682432432444" y="-213.25" />
+      <point x="232.6632882882891" y="-213.25" />
+      <point x="0.0" y="68.0" />
+    </edge>
+    <edge source="604641f6-1b21-477f-8a39-1c20bc347830.TABLE:test_db.public.reviews" target="604641f6-1b21-477f-8a39-1c20bc347830.TABLE:test_db.public.users" relationship="REFERENCES">
+      <point x="-45.00000000000003" y="-92.0" />
+      <point x="0.0" y="128.0" />
+    </edge>
+    <edge source="604641f6-1b21-477f-8a39-1c20bc347830.TABLE:test_db.public.products" target="604641f6-1b21-477f-8a39-1c20bc347830.TABLE:test_db.public.sellers" relationship="REFERENCES">
+      <point x="0.0" y="-116.0" />
+      <point x="0.0" y="56.0" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic" zoom="0.4" showDependencies="false" x="285.75" y="95.75" />
+  <SelectedNodes />
+  <Categories>
+    <Category>Columns</Category>
+    <Category>Comments</Category>
+    <Category>Key columns</Category>
+    <Category>Virtual foreign keys</Category>
+  </Categories>
+</Diagram>
+

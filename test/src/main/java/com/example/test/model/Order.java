@@ -1,9 +1,9 @@
 package com.example.test.model;
 
-import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import javax.persistence.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -26,8 +26,16 @@ public class Order {
     @JoinColumn(name = "userId")
     private User user;
 
+    @ManyToOne
+    @JoinColumn(name = "paymentId")
+    private Payment payments;
 
-    @OneToMany(mappedBy = "orders")
-    private List<OrderProduct> products;
 
+    @ManyToMany
+    @JoinTable(
+        name = "orderProducts",
+        joinColumns = @JoinColumn(name = "orderId"),
+        inverseJoinColumns = @JoinColumn(name = "productId")
+    )
+    private List<Product> products;
 }

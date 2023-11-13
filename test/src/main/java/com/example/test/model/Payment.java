@@ -1,9 +1,10 @@
 package com.example.test.model;
 
-import jakarta.persistence.*;
+import com.example.test.enums.TypeOfPayment;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import javax.persistence.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -22,8 +23,12 @@ public class Payment {
     private LocalDate paymentDate;
     private BigDecimal paymentAmount;
 
+    @Column(name = "typeOfPayment")
+    @Enumerated(EnumType.STRING)
+    private TypeOfPayment typeOfPayment;
+
     @OneToMany(mappedBy = "payments")
-    private List<Order> products;
+    private List<Order> orders;
 
 
 }

@@ -1,6 +1,6 @@
 package com.example.test.enums;
 
-public enum TypeOfMainCategory {
+public enum TypeOfCategory {
     BREAD,
     BAKERY,
     LAVASH_PITA_FLATBREAD,
@@ -31,3 +31,4 @@ public enum TypeOfMainCategory {
     WATER,
     CARBONATED_DRINKS
 }
+
