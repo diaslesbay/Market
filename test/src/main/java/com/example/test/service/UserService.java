@@ -1,19 +1,13 @@
 package com.example.test.service;
 
 import com.example.test.enums.TypeOfUser;
-import com.example.test.model.Category;
 import com.example.test.model.User;
 import com.example.test.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
 import java.util.Optional;
 @Service
 @Transactional(readOnly = true)
@@ -33,6 +27,7 @@ public class UserService {
         return userRepository.findByPhoneNumber(phoneNumber);
     }
 
+    @Transactional
     public void create(User user) {
         User user1 = new User();
         user1.setUsername(user.getUsername());
@@ -41,10 +36,9 @@ public class UserService {
         user1.setFirstname(user.getFirstname());
         user1.setLastname(user.getLastname());
         user1.setPhoneNumber(user.getPhoneNumber());
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setStatus(TypeOfUser.REGISTERED_USER);
-        System.out.println(user.getUsername()+"  feferferf");
-        userRepository.save(user);
+        user1.setPassword(passwordEncoder.encode(user.getPassword()));
+        user1.setStatus(TypeOfUser.REGISTERED_USER);
+        userRepository.save(user1);
     }
 
 

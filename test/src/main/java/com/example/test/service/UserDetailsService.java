@@ -3,7 +3,6 @@ package com.example.test.service;
 import com.example.test.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -22,7 +21,7 @@ public class UserDetailsService implements org.springframework.security.core.use
         com.example.test.model.User user = userRepository.findByUsername(username).orElseThrow(()-> new UsernameNotFoundException(
                 String.format("User '%s' not found", username)
         ));
-        return new org.springframework.security.core.userdetails.User(
+        return  new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
                 user.getPassword(),
                 Collections.singleton(new SimpleGrantedAuthority(user.getStatus().name()))
