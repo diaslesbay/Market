@@ -1,9 +1,7 @@
 package com.example.test.controller;
 
 import com.example.test.model.Product;
-import com.example.test.model.RefreshToken;
 import com.example.test.service.ProductService;
-import com.example.test.service.RefreshTokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
