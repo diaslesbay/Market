@@ -16,7 +16,6 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
-@Data
 @Table(name = "users")
 @Builder
 @NoArgsConstructor
@@ -63,6 +62,7 @@ public class User implements UserDetails{
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private TypeOfUser status;
+
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

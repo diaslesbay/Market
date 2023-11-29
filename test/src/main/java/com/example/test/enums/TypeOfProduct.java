@@ -1,6 +1,6 @@
 package com.example.test.enums;
 
-public enum WeightOrQuantity {
+public enum TypeOfProduct {
     Weight,
     Quantity
 }

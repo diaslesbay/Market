@@ -1,9 +1,7 @@
 package com.example.test.model;
 
-import com.example.test.enums.WeightOrQuantity;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import com.example.test.enums.TypeOfProduct;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -11,34 +9,40 @@ import javax.persistence.*;
 
 @Data
 @Entity
-@Getter
-@Setter
+@Builder
 @Table(name = "products")
+@NoArgsConstructor
+@AllArgsConstructor
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long productId;
 
+    @Column(unique = true)
     private String productName;
+
     private String description;
     private BigDecimal price;
 
-    @Column(name = "weightOrQuantity")
+    @Column(name = "image")
+    private String image;
+
+    @Column(name = "typeOfProduct")
     @Enumerated(EnumType.STRING)
-    private WeightOrQuantity weightOrQuantity;
+    private TypeOfProduct typeOfProduct;
+
+    @Column(name = "quantityOrWeight")
+    private Long quantityOrWeight;
 
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "sellerId")
     private Seller seller;
 
-
     @ManyToOne
-    @JoinColumn(name = "categoryTitle")
-    private Category categoryTitle;
-
+    @JoinColumn(name = "category_title")
+    private Category category;
 
     @ManyToMany(mappedBy = "products")
     private List<Order> orders;
-
 }
 

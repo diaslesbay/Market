@@ -1,27 +1,32 @@
 package com.example.test.controller;
 
 import com.example.test.model.Category;
+import com.example.test.model.Product;
 import com.example.test.service.CategoryService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
 
+import javax.validation.constraints.Positive;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/catalog")
+@RequestMapping("/category")
 public class CategoryController {
     private final CategoryService categoryService;
     @GetMapping("/all")
+    @ResponseStatus(HttpStatus.OK)
     public List<String> categories() {
         return categoryService.getAllClass()
                 .stream()
                 .map(Category::getCategoryName)
                 .collect(Collectors.toList());
     }
-
-
+    @PostMapping("/{categoryTitle}")
+    public  Optional<Category> getByCategoryTitle(@RequestParam String categoryTitle){
+        return categoryService.getByCategoryTitle(categoryTitle);
+    }
 }

@@ -1,34 +1,36 @@
 package com.example.test.model;
 
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data
 @Entity
-@Getter
-@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Table(name = "cards")
 public class Card {
     @Id
-    private Long cardNumber;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long cardId;
 
     private String cardHoldName;
 
     @Column(unique = true)
     private String IBAN;
 
-    private LocalDate givenDate;
-    private LocalDate expirationDate;
-    private Integer balance;
+    private String givenTime;
+    private String expirationTime;
+
+    private BigDecimal balance;
 
     @Column(unique = true)
     private Integer CVV;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "userId")
     private User user;
 

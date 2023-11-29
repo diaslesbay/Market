@@ -3,7 +3,7 @@ package com.example.test.dto;
 import lombok.Data;
 
 @Data
-public class SignUpRequest {
+public class RegisterDto {
     private String username;
     private String email;
     private String password;
@@ -11,4 +11,5 @@ public class SignUpRequest {
     private String lastname;
     private String address;
     private String phoneNumber;
+    private String role;
 }

@@ -1,17 +1,17 @@
 package com.example.test.model;
 
 import javax.persistence.*;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Data
 @Entity
-@Getter
-@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "credits")
 public class Credit {
     @Id
@@ -23,8 +23,10 @@ public class Credit {
     @JoinColumn(name = "cardNumber")
     private Card card;
 
-    private LocalDate startDate;
-    private LocalDate endDate;
+    private String startTime;
+    private String endTime;
 
     private BigDecimal monthlyPayment;
+
+
 }

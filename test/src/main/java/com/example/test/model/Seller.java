@@ -1,14 +1,16 @@
 package com.example.test.model;
 
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import com.example.test.enums.TypeOfUser;
+import lombok.*;
+import org.springframework.web.multipart.MultipartFile;
+
 import javax.persistence.*;
-import java.util.List;
+import java.math.BigDecimal;
 
 @Data
-@Getter
-@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "sellers")
 @Entity
 public class Seller {
@@ -18,8 +20,13 @@ public class Seller {
 
     private String sellerName;
     private String phoneNumber;
+    private BigDecimal balance;
 
-    @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Product> products;
-
+    private String username;
+    private String email;
+    private String password;
+    private String address;
+    @Column(name = "status")
+    @Enumerated(EnumType.STRING)
+    private TypeOfUser status;
 }

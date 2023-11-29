@@ -1,6 +1,7 @@
 jwt:
   secret: 413F44284728486250655368566D5970337336763979244226452948404D6351
   lifetime: 86400m
+
 spring:
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:test_db}
@@ -17,3 +18,15 @@ spring:
     show-sql: ${JPA_SHOW_SQL:true}
   main:
     allow-circular-references: true
+springdoc:
+  show-actuator: false
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+
+minio:
+  bucket: ${MINIO_BUCKET:images}
+  url: ${MINIO_URL:http://localhost:9000}
+  accessKey: ${MINIO_ACCESS_KEY:minioadmin}
+  secretKey: ${MINIO_SECRET_KEY:minioadmin}
+

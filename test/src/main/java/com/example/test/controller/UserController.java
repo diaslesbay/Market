@@ -1,26 +1,44 @@
 package com.example.test.controller;
 
-import com.example.test.dto.SignInRequest;
-import com.example.test.service.impl.UserDetailService;
+import com.example.test.model.Basket;
+import com.example.test.service.BasketService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
-;
+;import java.util.List;
 
 @RestController
 @RequestMapping("/user")
 @RequiredArgsConstructor
 public class UserController {
-    private final UserDetailService userService;
-    @GetMapping("/hello")
-    public String seyHello() {
-        return "Hello user";
+    private final BasketService basketService;
+
+
+    @GetMapping("/profile")
+    @ResponseStatus(HttpStatus.OK)
+    public UserDetails profile() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return (UserDetails) authentication.getPrincipal();
     }
-    @PostMapping("/profile")
-    public String profile(Principal principal, @RequestBody SignInRequest signInRequest) {
-        if(!principal.getName().equals(signInRequest.getUsername())) return HttpStatus.UNAUTHORIZED.name();
-        return userService.userDetailsService().loadUserByUsername(principal.getName()).toString();
+    @PostMapping("/product/toBasket/{id}")
+    public Basket toBasket(@RequestParam Long productId){
+        UserDetails authentication = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        return basketService.addToBasketProduct(authentication, productId);
+    }
+    @DeleteMapping("/product/delete/{id}")
+    public Basket deleteProductFromBasket(@RequestParam Long productId){
+        UserDetails authentication = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return basketService.deleteProductFromBasket(authentication, productId);
+    }
+
+    @DeleteMapping("/product/quantity/delete/{id}")
+    public Basket deleteProductQuantityFromBasket(@RequestParam Long productId){
+        UserDetails authentication = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return basketService.deleteProductQuantityFromBasket(authentication, productId);
     }
 }

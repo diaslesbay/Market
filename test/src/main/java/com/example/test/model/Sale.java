@@ -1,16 +1,16 @@
 package com.example.test.model;
 
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+
 import javax.persistence.*;
 
 import java.time.LocalDate;
 
 @Data
 @Entity
-@Getter
-@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "sales")
 public class Sale {
     @Id
@@ -18,8 +18,8 @@ public class Sale {
     private Long saleId;
 
     private Double percentage;
-    private LocalDate startDate;
-    private LocalDate endDate;
+    private String startTime;
+    private String endTime;
 
 
     @OneToOne(cascade = CascadeType.ALL)
