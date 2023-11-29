@@ -1,0 +1,53 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:9.3
+    environment:
+      POSTGRES_DB: "test_db"
+      POSTGRES_USER: "testuser"
+      POSTGRES_PASSWORD: "testpas"
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+    volumes:
+      - db:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+  tomcat:
+    image: tomcat:9.0.82-jdk8-corretto-al2
+    environment:
+      - PATH=/usr/local/tomcat/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+      - LANG=C.UTF-8
+      - JAVA_HOME=/usr/lib/jvm/java-1.8.0-amazon-corretto
+      - CATALINA_HOME=/usr/local/tomcat
+      - TOMCAT_NATIVE_LIBDIR=/usr/local/tomcat/native-jni-lib
+      - LD_LIBRARY_PATH=/usr/local/tomcat/native-jni-lib
+      - GPG_KEYS=48F8E69F6390C9F25CFEDCD268248959359E722B A9C5DF4D22E99998D9875A5110C01C5A2F6059E7 DCFD35E0BF8CA7344752DE8B6FB21E8933C60243
+      - TOMCAT_MAJOR=9
+      - TOMCAT_VERSION=9.0.82
+      - TOMCAT_SHA512=2b13f11f4e0d0b9aee667c256c6ea5d2853b067e8b7e8293f117da050d3833fda8aa9d9ad278bd12fb7fbf0825108c7d0384509f44c05f9bad73eb099cfaa128
+    volumes:
+      - tomcat_data:/path/inside/container
+    ports:
+      - "8090:8080"
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ACCESS_KEY}
+      - MINIO_ROOT_PASSWORD=${MINIO_SECRET_KEY}
+    command: server ~/minio --console-address :9090
+    ports:
+      - '9090:9090'
+      - '9000:9000'
+    volumes:
+      - minio-data:/minio
+
+volumes:
+  db:
+    driver: local
+  tomcat_data:
+    driver: local
+  minio-data:
+    driver: local
+
+
