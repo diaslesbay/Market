@@ -15,6 +15,7 @@ public class BasketProductService {
     public BasketProduct save(BasketProduct basketProduct){
         return  basketProductRepository.save(basketProduct);
     }
+    @Transactional
     public void deleteBasketProductByProductId(Long basketProductId){
         basketProductRepository.deleteBasketProductByProductProductId(basketProductId);
     }

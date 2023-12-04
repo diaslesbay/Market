@@ -1,6 +1,6 @@
 package com.example.test.exceptions;
 
-import lombok.Getter;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 

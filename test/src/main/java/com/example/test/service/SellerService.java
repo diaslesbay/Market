@@ -7,6 +7,7 @@ import com.example.test.model.Seller;
 import com.example.test.repository.ProductRepository;
 import com.example.test.repository.SellerRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,7 +19,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class SellerService {
     private final SellerRepository sellerRepository;
-    private final ProductRepository productRepository;
 
     public List<Seller> findAll(){
         return sellerRepository.findAll();
@@ -49,8 +49,15 @@ public class SellerService {
         sellerRepository.save(seller);
     }
 
-    public void deleteProductByProductId(Long productId){
-        productRepository.deleteProductByProductId(productId);
+    @Transactional
+    @Modifying
+    public void deleteSeller(Long sellerId){
+        Seller seller = sellerRepository.findById(sellerId).orElseThrow(()->
+                new ServiceException(
+                        String.format(ErrorMessage.SELLER_IS_NOT_FOUND.getMessage(), sellerId),
+                        ErrorMessage.SELLER_IS_NOT_FOUND.getStatus()
+                )
+        );
+        sellerRepository.deleteById(seller.getSellerId());
     }
-
 }

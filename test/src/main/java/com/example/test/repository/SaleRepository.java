@@ -3,6 +3,7 @@ package com.example.test.repository;
 import com.example.test.model.Sale;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,5 +15,6 @@ public interface SaleRepository extends JpaRepository<Sale, Long> {
 
     @Transactional
     @Modifying
+    @Query("delete from Sale s where s.product.productId = :productId")
     void deleteSaleByProductProductId(Long productId);
 }

@@ -1,8 +1,9 @@
 package com.example.test.dto;
 
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
 public class RegisterDto {
     private String username;
     private String email;

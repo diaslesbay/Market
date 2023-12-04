@@ -1,6 +1,5 @@
 package com.example.test.service;
 
-import com.example.test.dto.ProductDto;
 import com.example.test.dto.ReviewRequestDto;
 import com.example.test.dto.ReviewResponseDto;
 import com.example.test.enums.ErrorMessage;
@@ -12,13 +11,11 @@ import com.example.test.repository.ReviewsRepository;
 import com.example.test.validator.Time;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.checkerframework.checker.nullness.Opt;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -45,6 +42,10 @@ public class ReviewsService {
         return mapReviewToDto(review);
     }
 
+    public List<Review> findByProductId(Long productId){
+        return reviewsRepository.findReviewByProductProductId(productId);
+    }
+
     public List<ReviewResponseDto> getAllOwnComments(UserDetails userDetails){
         User user = userService.findByUsername(userDetails.getUsername());
         List<Review> reviews = reviewsRepository.findReviewByUserUserId(user.getUserId());
@@ -68,6 +69,7 @@ public class ReviewsService {
         return mapReviewListToDtoList(reviews);
     }
 
+    @Transactional
     public void deleteReviewByProductId(Long productId){
         reviewsRepository.deleteReviewByProductProductId(productId);
     }

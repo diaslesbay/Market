@@ -55,6 +55,7 @@ public class ProductService {
         );
     }
 
+    @Transactional
     public void deleteProductByProductId(Long productId){
         productRepository.deleteProductByProductId(productId);
     }

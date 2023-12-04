@@ -2,19 +2,15 @@ package com.example.test.service;
 
 import com.example.test.dto.PaymentHistoryResponseDto;
 import com.example.test.enums.ErrorMessage;
-import com.example.test.enums.TypeOfPayment;
 import com.example.test.exceptions.ServiceException;
 import com.example.test.model.Payment;
 import com.example.test.model.User;
 import com.example.test.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service

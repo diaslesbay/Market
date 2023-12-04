@@ -6,6 +6,7 @@ import com.example.test.model.User;
 import com.example.test.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -38,5 +39,17 @@ public class UserService {
 
     public List<User> findAll(){
         return userRepository.findAll();
+    }
+
+
+    @Transactional
+    public void deleteUser(Long userId){
+        User user = userRepository.findById(userId).orElseThrow(()->
+                new ServiceException(
+                        String.format(ErrorMessage.USERNAME_IS_NOT_FOUND.getMessage(),userId),
+                        ErrorMessage.USERNAME_IS_NOT_FOUND.getStatus()
+                )
+        );
+        userRepository.deleteById(user.getUserId());
     }
 }

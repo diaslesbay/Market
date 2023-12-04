@@ -1,13 +1,15 @@
 package com.example.test.dto;
 
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.util.List;
 
-@Data
+@Getter
+@Setter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class OrderResponseDto {
     private Long orderId;
     private String orderTime;

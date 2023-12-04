@@ -5,13 +5,13 @@ import javax.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 
-@Data
-@Entity
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Entity
 @Table(name = "credits")
 public class Credit {
     @Id
@@ -19,7 +19,7 @@ public class Credit {
     private Long creditId;
 
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "cardNumber")
     private Card card;
 

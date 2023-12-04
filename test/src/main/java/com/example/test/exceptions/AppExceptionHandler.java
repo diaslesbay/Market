@@ -1,10 +1,7 @@
 package com.example.test.exceptions;
 
-import com.example.test.enums.ErrorMessage;
 import io.jsonwebtoken.ExpiredJwtException;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;

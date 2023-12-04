@@ -1,8 +1,9 @@
 package com.example.test.dto;
 
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
 public class LoginDto {
     String username;
     String password;

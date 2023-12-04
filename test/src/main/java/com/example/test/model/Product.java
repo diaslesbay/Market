@@ -7,12 +7,13 @@ import java.math.BigDecimal;
 import java.util.List;
 import javax.persistence.*;
 
-@Data
-@Entity
+@Getter
+@Setter
 @Builder
-@Table(name = "products")
 @NoArgsConstructor
 @AllArgsConstructor
+@Entity
+@Table(name = "products")
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,11 +34,11 @@ public class Product {
     @Column(name = "quantityOrWeight")
     private Long quantityOrWeight;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "sellerId")
     private Seller seller;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "category_title")
     private Category category;
 

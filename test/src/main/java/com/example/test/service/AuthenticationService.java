@@ -34,7 +34,6 @@ import java.util.HashMap;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class AuthenticationService implements AuthenticationRepository {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;

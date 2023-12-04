@@ -3,10 +3,13 @@ package com.example.test.controller;
 import com.example.test.dto.PaymentHistoryResponseDto;
 import com.example.test.service.PaymentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -18,8 +21,8 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     @GetMapping("/show-payment-history")
-    public List<PaymentHistoryResponseDto> showPaymentHistory(){
-        UserDetails authentication = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return paymentService.getPaymentHistory(authentication);
+    @ResponseStatus(HttpStatus.OK)
+    public List<PaymentHistoryResponseDto> showPaymentHistory(@AuthenticationPrincipal UserDetails userDetails){
+        return paymentService.getPaymentHistory(userDetails);
     }
 }

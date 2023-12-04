@@ -17,5 +17,6 @@ public interface ReviewsRepository extends JpaRepository<Review, Long> {
 
     @Modifying
     @Transactional
+    @Query("delete from Review r where r.product.productId = :productId")
     void deleteReviewByProductProductId(Long productId);
 }

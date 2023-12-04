@@ -5,20 +5,19 @@ import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Collections;
 
-@Builder
 @Setter
 @Getter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "sellers")
 @Entity
+@Table(name = "sellers")
 public class Seller implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

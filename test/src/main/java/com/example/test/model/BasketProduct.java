@@ -1,19 +1,14 @@
 package com.example.test.model;
 
-import com.example.test.service.BasketService;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.hibernate.engine.internal.Cascade;
+import lombok.*;
 
 import javax.persistence.*;
-import java.util.List;
 
+@Getter
+@Setter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
-@Data
 @Entity
 @Table(name = "basket_product")
 public class BasketProduct {
@@ -26,7 +21,7 @@ public class BasketProduct {
     private Long id;
 
     @JoinColumn(name = "product_id")
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     private Product product;
 
     @Column(name = "quantity")

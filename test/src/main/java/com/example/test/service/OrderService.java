@@ -14,6 +14,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -21,8 +23,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-@Service
 @Slf4j
+@Service
 @RequiredArgsConstructor
 public class OrderService {
     private final BasketService basketService;
@@ -34,8 +36,7 @@ public class OrderService {
     private final SaleService saleService;
     private final BasketProductService basketProductService;
     private final SellerService sellerService;
-    private final ReviewsService reviewsService;
-    private final ProductService productService;
+
     private final Time time = new Time();
 
 
@@ -57,6 +58,7 @@ public class OrderService {
         Payment payment = createPayment(order, selectTypeOfPayment, card, total);
 
         processDeleteBasket(basketProducts, products, quantities);
+
         updateSellerBalances(products, quantities);
 
         orderRepository.save(order);
@@ -151,21 +153,8 @@ public class OrderService {
     public boolean checkSaleIsAvailable(Sale sale){
         return sale != null;
     }
-    private void handleProductExhaustion(BasketProduct basketProduct) {
-        System.out.println("Quantity "+basketProduct.getProduct().getQuantityOrWeight());
-        System.out.println(basketProduct.getProduct().getQuantityOrWeight());
-        if (basketProduct.getProduct().getQuantityOrWeight().intValue() == 0) {
-            System.out.println("Quantity first");
-            sellerService.deleteProductByProductId(basketProduct.getBasketProductId());
-            basketProductService.deleteBasketProductByProductId(basketProduct.getProduct().getProductId());
-            saleService.deleteByProductId(basketProduct.getBasketProductId());
-            reviewsService.deleteReviewByProductId(basketProduct.getBasketProductId());
-            productService.deleteProductByProductId(basketProduct.getBasketProductId());
-            System.out.println("Quantity second");
-        }
-    }
 
-    private void processDeleteBasket(List<BasketProduct> basketProducts, List<Product> products, List<Long> quantities) {
+    public void processDeleteBasket(List<BasketProduct> basketProducts, List<Product> products, List<Long> quantities) {
         IntStream.range(0, products.size())
                 .forEach(i -> {
                     Product product = products.get(i);
@@ -173,9 +162,8 @@ public class OrderService {
                     product.setQuantityOrWeight(updatedQuantityOrWeight);
                 });
 
-        basketProducts.stream()
-                .peek(basketProductService::deleteBasketProductByProductId)
-                .forEach(this::handleProductExhaustion);
+        basketProducts
+                .forEach(basketProductService::deleteBasketProductByProductId);
     }
 
 

@@ -1,26 +1,25 @@
 package com.example.test.model;
 
 import lombok.*;
-import org.hibernate.engine.internal.Cascade;
 
 import javax.persistence.*;
 import java.util.List;
 
-@Entity
 @Getter
 @Setter
-@Table(name = "baskets")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "baskets")
+@Entity
 public class Basket {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long basketId;
 
-    @OneToMany(mappedBy = "id")
+    @OneToMany(mappedBy = "id", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BasketProduct> basketProducts;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     private User user;
 }

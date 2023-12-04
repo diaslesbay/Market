@@ -1,0 +1,18 @@
+{
+  "properties": [
+    {
+      "name": "jwt.lifetime",
+      "type": "java.lang.String",
+      "description": "Description for jwt.lifetime."
+    },
+    {
+      "name": "jwt.secret",
+      "type": "java.lang.String",
+      "description": "Description for jwt.secret."
+    },
+    {
+      "name": "stripe.apikey",
+      "type": "java.lang.String",
+      "description": "Description for stripe.apikey."
+    }
+  ] }

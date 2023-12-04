@@ -35,8 +35,8 @@ public class SaleService  {
     public void save(Sale sale){
         saleRepository.save(sale);
     }
-    @Transactional
-    public void deleteByProductId(Long productId){
-        saleRepository.deleteSaleByProductProductId(productId);
-    }
+//    @Transactional
+//    public void deleteByProductId(Long productId){
+//        saleRepository.deleteSaleByProductProductId(productId);
+//    }
 }
