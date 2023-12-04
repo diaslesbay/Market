@@ -1,7 +1,8 @@
 package com.example.test.service;
 
 import com.example.test.config.properties.MinioProperties;
-import com.example.test.dto.ProductDto;
+import com.example.test.enums.ErrorMessage;
+import com.example.test.exceptions.ServiceException;
 import com.example.test.service.impl.ImageServiceImpl;
 import io.minio.BucketExistsArgs;
 import io.minio.MakeBucketArgs;
@@ -16,8 +17,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.UUID;
 
-import static org.hibernate.mapping.Constraint.generateName;
-
 @Service
 @RequiredArgsConstructor
 public class ImageService implements ImageServiceImpl {
@@ -29,9 +28,11 @@ public class ImageService implements ImageServiceImpl {
     public String upload(MultipartFile image) throws IOException {
         createBucket();
 
-        if(image.isEmpty() || image.getOriginalFilename() == null){
-            throw new RuntimeException("Image must have name");
-        }
+        if(image.isEmpty() || image.getOriginalFilename() == null)
+            throw new ServiceException(
+                    ErrorMessage.IMAGE_MUST_HAVE_NAME.getMessage(),
+                    ErrorMessage.IMAGE_MUST_HAVE_NAME.getStatus()
+            );
 
         String fileName = generateFileName(image);
         InputStream inputStream;

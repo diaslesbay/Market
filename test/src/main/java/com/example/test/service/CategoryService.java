@@ -1,5 +1,7 @@
 package com.example.test.service;
 
+import com.example.test.enums.ErrorMessage;
+import com.example.test.exceptions.ServiceException;
 import com.example.test.model.Category;
 import com.example.test.model.Product;
 import com.example.test.repository.CategoryRepository;
@@ -18,7 +20,12 @@ public class CategoryService {
         return categoryRepository.findAll();
     }
 
-    public Optional<Category> getByCategoryTitle(String categoryName){
-        return categoryRepository.getByCategoryTitle(categoryName);
+    public Category getByCategoryTitle(String categoryName){
+        return categoryRepository.getByCategoryTitle(categoryName).orElseThrow(()->
+                new ServiceException(
+                        String.format(ErrorMessage.CATEGORY_IS_NOT_FOUND.getMessage(), categoryName),
+                        ErrorMessage.CATEGORY_IS_NOT_FOUND.getStatus()
+                )
+        );
     }
 }

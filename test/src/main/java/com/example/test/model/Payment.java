@@ -27,7 +27,7 @@ public class Payment {
     @Enumerated(EnumType.STRING)
     private TypeOfPayment typeOfPayment;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "orderId")
     private Order orders;
 

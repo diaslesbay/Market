@@ -1,5 +1,9 @@
 package com.example.test.service;
 
+import com.example.test.dto.BasketProductResponseDto;
+import com.example.test.dto.BasketResponseDto;
+import com.example.test.enums.ErrorMessage;
+import com.example.test.exceptions.ServiceException;
 import com.example.test.model.Basket;
 import com.example.test.model.BasketProduct;
 import com.example.test.model.Product;
@@ -10,12 +14,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.transaction.Transactional;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -26,99 +28,194 @@ public class BasketService {
     private final ProductService productService;
     private final BasketProductService basketProductService;
 
+    private static final Long DEFAULT_QUANTITY = 1L;
 
-    @PersistenceContext
-    private EntityManager entityManager;
-
-
-    @Transactional
     public Basket getUsersBasket(Long userId){
-        return basketRepository.findUsersBasket(userId);
-    }
-
-    @Transactional
-    public Basket addToBasketProduct(UserDetails userDetails, Long id){
-        User user = userService.findByUsername(userDetails.getUsername()).orElseThrow();
-        Product product = productService.getProductsByProductId(id).orElseThrow();
-
-        Basket basket = getUsersBasket(user.getUserId());
-
-        List<BasketProduct> list = basket.getBasketProducts();
-
-        boolean check = false;
-        for (int i = 0; i < list.size(); i++){
-            if(list.get(i).getProduct().equals(product)) {
-                if(product.getQuantityOrWeight() - list.get(i).getQuantity() < 1) throw new RuntimeException("Product is not available");
-
-                list.get(i).setQuantity(list.get(i).getQuantity() + 1);
-                check = true;
-            }
-        }
-        if(!check){
-            if(product.getQuantityOrWeight() < 1) throw new RuntimeException("Product is not available");
-            BasketProduct basketProduct = BasketProduct.builder()
-                    .product(product)
-                    .quantity(1L)
-                    .id(basket.getBasketId())
-                    .build();
-
-            basketProductService.save(basketProduct);
-            list.add(basketProduct);
-        }
-        basketRepository.save(basket);
+        Basket basket = basketRepository.findUsersBasket(userId);
+        if(basket == null)
+            throw new ServiceException(
+                    ErrorMessage.LIST_IS_EMPTY.getMessage(),
+                    ErrorMessage.LIST_IS_EMPTY.getStatus()
+            );
         return basket;
     }
 
-    @Transactional
-    public Basket deleteProductFromBasket(UserDetails userDetails, Long productId){
-        log.info("Successfully arrived productId "+productId);
+    public BasketResponseDto getBasket(UserDetails userDetails){
+        User user = userService.findByUsername(userDetails.getUsername());
+        Basket basket = basketRepository.findUsersBasket(user.getUserId());
 
-        User user = userService.findByUsername(userDetails.getUsername()).orElseThrow();
-        Product product = productService.getProductsByProductId(productId).orElseThrow();
+        if(basket == null || basket.getBasketProducts().isEmpty())
+            throw new ServiceException(
+                    ErrorMessage.LIST_IS_EMPTY.getMessage(),
+                    ErrorMessage.LIST_IS_EMPTY.getStatus()
+            );
+        List<BasketProduct> list = basket.getBasketProducts();
+        checkIfListIsEmpty(list);
+
+        List<BasketProductResponseDto> basketProductResponseDtoList = list.stream()
+                .map(bp -> BasketProductResponseDto.builder()
+                        .basketProductId(bp.getBasketProductId())
+                        .productName(bp.getProduct().getProductName())
+                        .description(bp.getProduct().getDescription())
+                        .price(bp.getProduct().getPrice())
+                        .sellerUsername(bp.getProduct().getSeller().getUsername())
+                        .sellerPhoneNumber(bp.getProduct().getSeller().getPhoneNumber())
+                        .quantity(bp.getQuantity())
+                        .build())
+                .collect(Collectors.toList());
+
+
+        return BasketResponseDto.builder()
+                .basketId(basket.getBasketId())
+                .username(user.getUsername())
+                .basketProducts(basketProductResponseDtoList)
+                .build();
+    }
+
+    public BasketResponseDto addToBasketProduct(UserDetails userDetails, Long id){
+        log.info("An item with id={} was received and added to basket.", id);
+        User user = userService.findByUsername(userDetails.getUsername());
+
+        Product product = productService.getProductsByProductId(id);
+
         Basket basket = getUsersBasket(user.getUserId());
 
         List<BasketProduct> list = basket.getBasketProducts();
-        List<BasketProduct> a = list;
 
-        for (BasketProduct value : list) {
-            if (value.getProduct().equals(product)){
-                a.remove(value);
+        boolean check = list.stream()
+                .filter(value -> value.getProduct().equals(product))
+                .peek(value -> checkProductAvailability(product, value))
+                .findFirst()
+                .isPresent();
 
-                BasketProduct basketProduct = entityManager.find(BasketProduct.class, value.getBasketProductId());
-                entityManager.remove(basketProduct);
-                break;
-            }
+        if(!check)
+            addNewProductToBasket(product, basket, list);
+
+        basketRepository.save(basket);
+        log.info("An item with id={} was added to basket.", id);
+
+        List<BasketProductResponseDto> basketProductResponseDtoList = list.stream()
+                .map(bp -> BasketProductResponseDto.builder()
+                        .basketProductId(bp.getBasketProductId())
+                        .productName(bp.getProduct().getProductName())
+                        .description(bp.getProduct().getDescription())
+                        .price(bp.getProduct().getPrice())
+                        .sellerUsername(bp.getProduct().getSeller().getUsername())
+                        .sellerPhoneNumber(bp.getProduct().getSeller().getPhoneNumber())
+                        .quantity(bp.getQuantity())
+                        .build())
+                .collect(Collectors.toList());
+
+        return BasketResponseDto.builder()
+                .username(user.getUsername())
+                .basketId(basket.getBasketId())
+                .basketProducts(basketProductResponseDtoList)
+                .build();
+    }
+    private void checkIfListIsEmpty(List<BasketProduct> list) {
+        if (list.isEmpty())
+            throw new ServiceException(
+                    ErrorMessage.LIST_IS_EMPTY.getMessage(),
+                    ErrorMessage.LIST_IS_EMPTY.getStatus()
+            );
+    }
+    private void addNewProductToBasket(Product product, Basket basket, List<BasketProduct> list) {
+        if (product.getQuantityOrWeight() < 1) {
+            throw new ServiceException(
+                    String.format(ErrorMessage.PRODUCT_IS_NOT_AVAILABLE.getMessage(), product.getProductName()),
+                    ErrorMessage.PRODUCT_IS_NOT_AVAILABLE.getStatus()
+            );
         }
 
-        basket.setBasketProducts(a);
+        BasketProduct basketProduct = BasketProduct.builder()
+                .product(product)
+                .quantity(DEFAULT_QUANTITY)
+                .id(basket.getBasketId())
+                .build();
+
+        basketProductService.save(basketProduct);
+        list.add(basketProduct);
+    }
+
+    private void checkProductAvailability(Product product, BasketProduct value) {
+        if (product.getQuantityOrWeight() - value.getQuantity() < 1)
+            throw new ServiceException(
+                    String.format(ErrorMessage.PRODUCT_IS_NOT_AVAILABLE.getMessage(), product.getProductName()),
+                    ErrorMessage.PRODUCT_IS_NOT_AVAILABLE.getStatus()
+            );
+        value.setQuantity(value.getQuantity() + 1);
+    }
+
+
+    @Transactional
+    public void deleteProductFromBasket(UserDetails userDetails){
+        log.info("Successfully arrived username with id={}", userDetails.getUsername());
+
+        User user = userService.findByUsername(userDetails.getUsername());
+        Basket basket = getUsersBasket(user.getUserId());
+
+        List<BasketProduct> list = basket.getBasketProducts();
+        checkIfListIsEmpty(list);
+
+        List<Long> ids = list.stream()
+                .map(bp -> bp.getProduct().getProductId())
+                .toList();
+
+        if (!ids.isEmpty())
+            for (Long productId : ids)
+                basketProductService.deleteBasketProductByProductId(productId);
+
+        else
+            throw new ServiceException(
+                    ErrorMessage.UNAVAILABLE_OPERATION.getMessage(),
+                    ErrorMessage.UNAVAILABLE_OPERATION.getStatus()
+            );
         log.info("Successfully deleted basket");
-        basketRepository.save(basket);
-        return basket;
     }
 
     @Transactional
-    public Basket deleteProductQuantityFromBasket(UserDetails userDetails, Long productId){
-        User user = userService.findByUsername(userDetails.getUsername()).orElseThrow();
-        Product product = productService.getProductsByProductId(productId).orElseThrow();
+    public void deleteProductQuantityFromBasket(UserDetails userDetails, Long productId){
+        User user = userService.findByUsername(userDetails.getUsername());
+        Product product = productService.getProductsByProductId(productId);
         Basket basket = getUsersBasket(user.getUserId());
 
         List<BasketProduct> list = basket.getBasketProducts();
+        checkIfListIsEmpty(list);
 
-        for (BasketProduct value : list) {
-            if (value.getProduct().equals(product) && value.getQuantity() > 1)
-                value.setQuantity(value.getQuantity() - 1);
-            else if(value.getProduct().equals(product) && value.getQuantity() == 1) {
-                list.remove(value);
-                BasketProduct basketProduct = entityManager.find(BasketProduct.class, value.getBasketProductId());
-                entityManager.remove(basketProduct);
-            }
-        }
+        if(!checkIfProductExist(product, list))
+            throw new ServiceException(
+                    String.format(ErrorMessage.PRODUCT_IS_NOT_FOUND.getMessage(), product.getProductName()),
+                    ErrorMessage.PRODUCT_IS_NOT_FOUND.getStatus()
+            );
+
+        list.stream()
+                .filter(bp -> isBasketProductForProduct(bp, product))
+                .findFirst()
+                .ifPresent(this::updateOrDeleteBasketProduct);
+
         log.info("Successfully deleted basket quantity");
-        basket.setBasketProducts(list);
-        basketRepository.save(basket);
-        return basket;
+    }
+
+    private boolean checkIfProductExist(Product product, List<BasketProduct> list){
+        return list.stream().anyMatch(bp -> bp.getProduct().equals(product));
+    }
+
+    private void updateOrDeleteBasketProduct(BasketProduct basketProduct) {
+        if (basketProduct.getQuantity() > 1)
+            basketProduct.setQuantity(basketProduct.getQuantity() - 1);
+        else
+            deleteBasketProductIfQuantityEqualsOne(basketProduct);
+    }
+    public void deleteBasketProductIfQuantityEqualsOne(BasketProduct basketProduct) {
+        if (basketProduct.getQuantity() == 1L)
+            basketProductService.deleteBasketProductByProductId(basketProduct.getProduct().getProductId());
+
+    }
+    private boolean isBasketProductForProduct(BasketProduct basketProduct, Product product) {
+        return basketProduct.getProduct().equals(product);
     }
     public Basket createBasket(User user){
+        log.info("Received user with username {} in create basket method ", user.getUsername());
         return Basket.builder()
                 .basketProducts(new CopyOnWriteArrayList<>())
                 .user(user)
@@ -128,5 +225,4 @@ public class BasketService {
     public Basket save(Basket basket){
         return basketRepository.save(basket);
     }
-
 }

@@ -1,5 +1,10 @@
 package com.example.test.service;
 
+import com.example.test.dto.ProductDto;
+import com.example.test.dto.ReviewRequestDto;
+import com.example.test.dto.ReviewResponseDto;
+import com.example.test.enums.ErrorMessage;
+import com.example.test.exceptions.ServiceException;
 import com.example.test.model.Product;
 import com.example.test.model.Review;
 import com.example.test.model.User;
@@ -11,8 +16,10 @@ import org.checkerframework.checker.nullness.Opt;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -21,23 +28,63 @@ public class ReviewsService {
     private final ReviewsRepository reviewsRepository;
     private final ProductService productService;
     private final UserService userService;
-    private final Time time = new Time();
-    public Review writeReview(Long productId, String comment, Integer rate, UserDetails userDetails){
-        Optional<Product> product = productService.getProductsByProductId(productId);
-        Optional<User> user = userService.findByUsername(userDetails.getUsername());
-        if(!product.isPresent() || !user.isPresent()) throw new RuntimeException("Product is not found");
-        Review review = Review.builder()
-                .rating(rate)
-                .comment(comment)
-                .product(product.get())
-                .reviewTime(time.dateNow())
-                .user(user.get())
-                .build();
+    private final static Time time = new Time();
+    public ReviewResponseDto writeReview(ReviewRequestDto reviewRequestDto, UserDetails userDetails){
+        Product product = productService.getProductsByProductId(reviewRequestDto.getProductId());
+        User user = userService.findByUsername(userDetails.getUsername());
 
-        return reviewsRepository.save(review);
+        Review review = Review.builder()
+                .rating(reviewRequestDto.getRate())
+                .comment(reviewRequestDto.getComment())
+                .product(product)
+                .reviewTime(time.dateNow())
+                .user(user)
+                .build();
+        reviewsRepository.save(review);
+
+        return mapReviewToDto(review);
     }
 
-    public List<Object[]> getThreeTheMostPopularProduct(){
-        return reviewsRepository.findByAllProductWithRating();
+    public List<ReviewResponseDto> getAllOwnComments(UserDetails userDetails){
+        User user = userService.findByUsername(userDetails.getUsername());
+        List<Review> reviews = reviewsRepository.findReviewByUserUserId(user.getUserId());
+        if(reviews.isEmpty())
+            throw new ServiceException(
+                    ErrorMessage.YOU_DO_NOT_HAVE_REVIEWS.getMessage(),
+                    ErrorMessage.YOU_DO_NOT_HAVE_REVIEWS.getStatus()
+            );
+
+        return mapReviewListToDtoList(reviews);
+    }
+
+    public List<ReviewResponseDto> getCommentsOfProduct(Long productId){
+        List<Review> reviews = reviewsRepository.findReviewByProductProductId(productId);
+
+        if(reviews.isEmpty())
+            throw new ServiceException(
+                    String.format(ErrorMessage.PRODUCT_DOES_NOT_HAVE_REVIEWS.getMessage(), productId),
+                    ErrorMessage.PRODUCT_DOES_NOT_HAVE_REVIEWS.getStatus()
+            );
+        return mapReviewListToDtoList(reviews);
+    }
+
+    public void deleteReviewByProductId(Long productId){
+        reviewsRepository.deleteReviewByProductProductId(productId);
+    }
+
+    private ReviewResponseDto mapReviewToDto(Review review) {
+        return ReviewResponseDto.builder()
+                .reviewId(review.getReviewId())
+                .productName(review.getProduct().getProductName())
+                .username(review.getUser().getUsername())
+                .reviewTime(review.getReviewTime())
+                .comment(review.getComment())
+                .rating(review.getRating())
+                .build();
+    }
+    private List<ReviewResponseDto> mapReviewListToDtoList(List<Review> reviews) {
+        return reviews.stream()
+                .map(this::mapReviewToDto)
+                .collect(Collectors.toList());
     }
 }

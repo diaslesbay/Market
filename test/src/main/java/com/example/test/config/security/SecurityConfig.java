@@ -34,7 +34,10 @@ public class SecurityConfig{
                         "/user/**",
                         "/order/**",
                         "/reviews/**",
-                        "/payments/**").hasAnyAuthority(TypeOfUser.REGISTERED_USER.name())
+                        "/payments/**",
+                        "/card/**",
+                        "/credit/**",
+                        "/basket/**").hasAuthority(TypeOfUser.REGISTERED_USER.name())
                 .antMatchers(
                         "/sellers/**").hasAnyAuthority(TypeOfUser.SELLER.name())
                 .antMatchers(

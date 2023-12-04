@@ -6,7 +6,6 @@ import lombok.Setter;
 import javax.persistence.*;
 import java.util.List;
 
-@Data
 @Entity
 @Getter
 @Setter

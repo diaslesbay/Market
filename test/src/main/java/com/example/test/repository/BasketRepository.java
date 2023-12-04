@@ -9,4 +9,5 @@ import org.springframework.stereotype.Repository;
 public interface BasketRepository  extends JpaRepository<Basket, Long>{
     @Query("select b from Basket b where b.user.userId = :userId")
     Basket findUsersBasket(Long userId);
+
 }

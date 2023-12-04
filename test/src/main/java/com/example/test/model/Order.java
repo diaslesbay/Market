@@ -22,7 +22,7 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long orderId;
 
-    private String orderDate;
+    private String orderTime;
     private BigDecimal totalAmount;
 
     @ManyToOne

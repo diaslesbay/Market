@@ -18,7 +18,6 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long productId;
 
-    @Column(unique = true)
     private String productName;
 
     private String description;
@@ -34,7 +33,7 @@ public class Product {
     @Column(name = "quantityOrWeight")
     private Long quantityOrWeight;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "sellerId")
     private Seller seller;
 

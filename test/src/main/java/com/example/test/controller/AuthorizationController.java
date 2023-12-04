@@ -1,58 +1,38 @@
 package com.example.test.controller;
 
-import com.example.test.exceptions.JwtTokenExpiredException;
 import com.example.test.token.dto.RefreshTokenRequestDto;
 import com.example.test.repository.AuthenticationRepository;
 import com.example.test.token.dto.JwtAuthenticationResponseDto;
 import com.example.test.dto.LoginDto;
 import com.example.test.dto.RegisterDto;
-import com.example.test.validator.SellerValidator;
-import com.example.test.validator.UserValidator;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Objects;
 
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/auth")
 public class AuthorizationController {
-    @Autowired
-    private AuthenticationRepository authenticationRepository;
-    @Autowired
-    private UserValidator userValidator;
-    @Autowired
-    private SellerValidator sellerValidator;
-
+    private final AuthenticationRepository authenticationRepository;
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<String> register(@RequestBody RegisterDto registerDto, BindingResult bindingResult) {
-        if(registerDto.getRole().equalsIgnoreCase("REGISTERED_USER"))
-            userValidator.validate(registerDto, bindingResult);
-        else if(registerDto.getRole().equalsIgnoreCase("SELLER"))
-            sellerValidator.validate(registerDto, bindingResult);
-        else throw new RuntimeException("Not found role");
-
-        if (bindingResult.hasErrors())
-            return ResponseEntity.ok(Objects.requireNonNull(Objects.requireNonNull(bindingResult.getFieldError()).getDefaultMessage()));
-
-        return ResponseEntity.ok(String.valueOf(authenticationRepository.register(registerDto)));
+    public ResponseEntity<RegisterDto> register(@RequestBody RegisterDto registerDto){
+        return ResponseEntity.ok(authenticationRepository.register(registerDto));
     }
 
     @PostMapping("/login")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<JwtAuthenticationResponseDto> login(@RequestBody LoginDto loginDto){
+    public ResponseEntity<JwtAuthenticationResponseDto> login(@RequestBody LoginDto loginDto) throws Exception {
         return ResponseEntity.ok(authenticationRepository.login(loginDto));
     }
 
 
     @PostMapping("/refresh")
+    @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<JwtAuthenticationResponseDto> refresh(
-            @RequestBody RefreshTokenRequestDto refreshTokenRequest) throws JwtTokenExpiredException {
+            @RequestBody RefreshTokenRequestDto refreshTokenRequest){
         return ResponseEntity.ok(authenticationRepository.refreshToken(refreshTokenRequest));
     }
 }

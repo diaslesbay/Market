@@ -1,11 +1,15 @@
 package com.example.test.service;
 
+import com.example.test.dto.CardInfoResponseDto;
+import com.example.test.enums.ErrorMessage;
+import com.example.test.exceptions.ServiceException;
 import com.example.test.model.Card;
 import com.example.test.model.User;
 import com.example.test.repository.CardRepository;
 import com.example.test.validator.Time;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -17,12 +21,35 @@ import java.util.Random;
 @RequiredArgsConstructor
 public class CardService {
     private final CardRepository cardRepository;
+    private final UserService userService;
     private final Time time = new Time();
-    public Optional<Card> getCardByUserId(Long userId){
-        return cardRepository.findCardByUserUserId(userId);
+    public Card getCardByUserId(Long userId){
+        return cardRepository.findCardByUserUserId(userId).orElseThrow(()->
+                new ServiceException(
+                        String.format(ErrorMessage.USERNAME_DOES_NOT_HAVE_SUCH_CARD.getMessage(), userId),
+                        ErrorMessage.USERNAME_DOES_NOT_HAVE_SUCH_CARD.getStatus()
+                )
+        );
     }
 
+    public CardInfoResponseDto getInfoAboutCard(UserDetails userDetails){
+        User user = userService.findByUsername(userDetails.getUsername());
+        Card card = getCardByUserId(user.getUserId());
+
+        return CardInfoResponseDto.builder()
+                .cardId(card.getCardId())
+                .cardHoldName(card.getCardHoldName())
+                .expirationTime(card.getExpirationTime())
+                .cvv(card.getCVV())
+                .iban(card.getIBAN())
+                .balance(card.getBalance())
+                .givenTime(card.getGivenTime())
+                .build();
+    }
+
+
     public void save(User user){
+        log.info("Received user with username {} in create card method ", user.getUsername());
         Card card = Card.builder()
                 .cardHoldName(user.getFirstname()+" "+user.getLastname())
                 .IBAN(generateRandomSixteenDigits())
@@ -57,7 +84,6 @@ public class CardService {
     }
     private boolean checkRandomSixteenDigits(Long iban){
         Optional<Card> card = cardRepository.findIban(String.valueOf(iban));
-
         return card.isEmpty();
     }
 }

@@ -7,8 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -17,12 +15,12 @@ public class BasketProductService {
     public BasketProduct save(BasketProduct basketProduct){
         return  basketProductRepository.save(basketProduct);
     }
-
-
+    public void deleteBasketProductByProductId(Long basketProductId){
+        basketProductRepository.deleteBasketProductByProductProductId(basketProductId);
+    }
 
     @Transactional
-    public void deleteBasketId(List<Long> basketProductIds){
-        log.info("From repository: Delete productId = "+basketProductIds);
-        basketProductRepository.deleteByBasketProductIds(basketProductIds);
+    public void deleteBasketProductByProductId(BasketProduct basketProduct) {
+        basketProductRepository.deleteById(basketProduct.getBasketProductId());
     }
 }

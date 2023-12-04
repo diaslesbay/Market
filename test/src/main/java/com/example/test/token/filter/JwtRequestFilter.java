@@ -1,7 +1,12 @@
 package com.example.test.token.filter;
 
+import com.example.test.enums.ErrorMessage;
+import com.example.test.exceptions.ServiceException;
 import com.example.test.token.JwtParser;
 import com.example.test.token.validator.JwtValidator;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.SignatureException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
@@ -24,25 +29,41 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     private final JwtParser jwtParser;
     private final JwtValidator jwtValidator;
     private final UserDetailsService userService;
+
+    private static final String AUTHORIZATION_HEADER = "Authorization";
+    private static final String BEARER_PREFIX = "Bearer ";
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        final String authHeader = request.getHeader("Authorization");
+        final String authHeader = request.getHeader(AUTHORIZATION_HEADER);
         final String jwt;
         final String username;
 
-        if(authHeader == null || !authHeader.startsWith("Bearer ")){
+        if (authHeader == null || !authHeader.startsWith(BEARER_PREFIX)) {
             filterChain.doFilter(request,response);
             return;
         }
         jwt = authHeader.substring(7);
-        username = jwtParser.extractUsername(jwt);
-        if(!username.isEmpty() && SecurityContextHolder.getContext().getAuthentication() == null){
+
+        try {
+            username = jwtParser.extractUsername(jwt);
+        }catch (MalformedJwtException | ExpiredJwtException | SignatureException ex){
+            throw new ServiceException(
+                    ErrorMessage.TOKEN_IS_INVALID_OR_EXPIRED.getMessage(),
+                    ErrorMessage.TOKEN_IS_INVALID_OR_EXPIRED.getStatus()
+            );
+        }
+
+        if (!username.isEmpty() && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userService.loadUserByUsername(username);
-            if (jwtValidator.isTokenValid(jwt, userDetails)){
+            if (jwtValidator.isTokenValid(jwt, userDetails)) {
+
                 SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
                 UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities()
+                        userDetails,
+                        null,
+                        userDetails.getAuthorities()
                 );
+
                 token.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 securityContext.setAuthentication(token);
                 SecurityContextHolder.setContext(securityContext);

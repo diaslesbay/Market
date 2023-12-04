@@ -21,9 +21,9 @@ public class JwtParser {
     }
 
     private Claims extractAllClaims(String token){
-        return Jwts.parser()
-                .setSigningKey(jwtService.getSecret())
-                .parseClaimsJws(token)
-                .getBody();
+            return Jwts.parser()
+                    .setSigningKey(jwtService.getSecret())
+                    .parseClaimsJws(token)
+                    .getBody();
     }
 }

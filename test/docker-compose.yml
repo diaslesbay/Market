@@ -12,6 +12,19 @@ services:
       - db:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    environment:
+      - MINIO_ROOT_USER=${MINIO_ACCESS_KEY}
+      - MINIO_ROOT_PASSWORD=${MINIO_SECRET_KEY}
+    command: server ~/minio --console-address :9090
+    ports:
+      - '9090:9090'
+      - '9000:9000'
+    volumes:
+      - minio-data:/minio
+
   tomcat:
     image: tomcat:9.0.82-jdk8-corretto-al2
     environment:
@@ -28,19 +41,20 @@ services:
     volumes:
       - tomcat_data:/path/inside/container
     ports:
-      - "8090:8080"
-  minio:
-    image: minio/minio:latest
-    container_name: minio
-    environment:
-      - MINIO_ROOT_USER=${MINIO_ACCESS_KEY}
-      - MINIO_ROOT_PASSWORD=${MINIO_SECRET_KEY}
-    command: server ~/minio --console-address :9090
+      - "8090:8090"
+
+  spring-boot-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres
     ports:
-      - '9090:9090'
-      - '9000:9000'
-    volumes:
-      - minio-data:/minio
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/test_db
+      SPRING_DATASOURCE_USERNAME: testuser
+      SPRING_DATASOURCE_PASSWORD: testpas
 
 volumes:
   db:
@@ -49,5 +63,6 @@ volumes:
     driver: local
   minio-data:
     driver: local
+
 
 

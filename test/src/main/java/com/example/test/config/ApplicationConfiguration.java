@@ -1,6 +1,9 @@
 package com.example.test.config;
 
 import com.example.test.config.properties.MinioProperties;
+import com.example.test.model.Seller;
+import com.example.test.model.User;
+import com.example.test.service.SellerService;
 import com.example.test.service.UserService;
 import io.minio.MinioClient;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +25,7 @@ import javax.annotation.PostConstruct;
 public class ApplicationConfiguration {
     private final UserService userService;
     private final MinioProperties minioProperties;
+    private final SellerService sellerService;
     @Bean
     public MinioClient minioClient(){
         return MinioClient.builder()
@@ -31,9 +35,17 @@ public class ApplicationConfiguration {
     }
     @Bean
     public UserDetailsService userDetailsService() {
-        return username -> userService
-                .findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User with this username was not found"));
+        return username -> {
+            Seller seller = sellerService
+                    .findByUsernameWithoutThrow(username)
+                    .orElse(null);
+
+            User user = userService
+                    .findByUsernameWithoutThrow(username)
+                    .orElse(null);
+
+            return seller == null ? user : seller;
+        };
     }
     @Bean
     public AuthenticationProvider authenticationProvider(UserDetailsService userDetailsService,

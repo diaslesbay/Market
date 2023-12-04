@@ -1,18 +1,18 @@
 package com.example.test.controller;
 
-import com.example.test.model.Basket;
+import com.example.test.dto.OrderResponseDto;
 import com.example.test.model.Order;
-import com.example.test.model.User;
-import com.example.test.service.BasketService;
 import com.example.test.service.OrderService;
-import com.example.test.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.units.qual.A;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/order")
@@ -21,9 +21,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class OrderController {
     private final OrderService orderService;
     @PostMapping("/addOrder")
-    public Order addOrder(String selectTypeOfPayment){
-        UserDetails authentication = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        log.info(authentication.getUsername());
-        return orderService.addOrder(authentication, selectTypeOfPayment);
+    @ResponseStatus(HttpStatus.OK)
+    public OrderResponseDto addOrder(@AuthenticationPrincipal UserDetails userDetails, @RequestParam String selectTypeOfPayment){
+        return orderService.addOrder(userDetails, selectTypeOfPayment);
+    }
+
+    @GetMapping("/show-all-orders")
+    @ResponseStatus(HttpStatus.OK)
+    private List<OrderResponseDto> showAllOrders(@AuthenticationPrincipal UserDetails userDetails){
+        return orderService.getAllOrders(userDetails);
     }
 }

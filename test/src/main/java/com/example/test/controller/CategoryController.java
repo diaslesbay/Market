@@ -25,8 +25,4 @@ public class CategoryController {
                 .map(Category::getCategoryName)
                 .collect(Collectors.toList());
     }
-    @PostMapping("/{categoryTitle}")
-    public  Optional<Category> getByCategoryTitle(@RequestParam String categoryTitle){
-        return categoryService.getByCategoryTitle(categoryTitle);
-    }
 }

@@ -1,15 +1,14 @@
 package com.example.test.controller;
 
-import com.example.test.model.Product;
+import com.example.test.dto.ReviewRequestDto;
+import com.example.test.dto.ReviewResponseDto;
 import com.example.test.model.Review;
 import com.example.test.service.ReviewsService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -20,14 +19,23 @@ public class ReviewsController {
     private final ReviewsService reviewsService;
 
     @PostMapping("/write-comment")
-    public Review writeReview(Long productId, String comment, Integer rate){
-        UserDetails authentication = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return reviewsService.writeReview(productId, comment, rate, authentication);
+    @ResponseStatus(HttpStatus.OK)
+    public ReviewResponseDto writeReview(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestBody ReviewRequestDto reviewRequestDto
+    ){
+        return reviewsService.writeReview(reviewRequestDto, userDetails);
     }
 
-    @GetMapping("/showThreeTheMostPopularProduct")
-    public List<Object[]> showThreeTheMostPopularProduct(){
-        return reviewsService.getThreeTheMostPopularProduct();
+    @GetMapping("/show-all-own-comments")
+    @ResponseStatus(HttpStatus.OK)
+    public List<ReviewResponseDto> showAllOwnComments(@AuthenticationPrincipal UserDetails userDetails){
+        return reviewsService.getAllOwnComments(userDetails);
     }
 
+    @GetMapping("/show-comments-of-product/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public List<ReviewResponseDto> showCommentsOfProduct(@RequestParam Long productId){
+        return reviewsService.getCommentsOfProduct(productId);
+    }
 }

@@ -1,20 +1,23 @@
 package com.example.test.service;
 
-import com.example.test.exceptions.EntityNotFoundException;
-import com.example.test.exceptions.JwtIsInvalid;
-import com.example.test.exceptions.JwtTokenExpiredException;
+import com.example.test.enums.ErrorMessage;
+import com.example.test.exceptions.ServiceException;
+import com.example.test.model.Basket;
 import com.example.test.model.Seller;
 import com.example.test.token.JwtParser;
-import com.example.test.token.validator.JwtValidator;
 import com.example.test.token.dto.RefreshTokenRequestDto;
 import com.example.test.dto.LoginDto;
 import com.example.test.dto.RegisterDto;
 import com.example.test.enums.TypeOfUser;
 import com.example.test.model.User;
-import com.example.test.repository.UserRepository;
 import com.example.test.repository.AuthenticationRepository;
 import com.example.test.token.dto.JwtAuthenticationResponseDto;
 import com.example.test.token.repository.JwtRepository;
+import com.example.test.validator.SellerValidator;
+import com.example.test.validator.UserValidator;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.SignatureException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -25,115 +28,168 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.HashMap;
-import java.util.Optional;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class AuthenticationService implements AuthenticationRepository {
-    private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtRepository JwtRepository;
     private final JwtParser jwtParser;
-    private final JwtValidator jwtValidator;
     private final BasketService basketService;
     private final CardService cardService;
     private final SellerService sellerService;
+    private final UserService userService;
+    private final UserValidator userValidator;
+    private final SellerValidator sellerValidator;
+
+    private static final String SELLER_ROLE = "SELLER";
+    private static final String REGISTERED_USER_ROLE = "REGISTERED_USER";
+    private static final BigDecimal DEFAULT_BALANCE = BigDecimal.valueOf(0);
+
 
     @Override
     @Transactional
-    public Object register(RegisterDto registerDto) {
+    public RegisterDto register(RegisterDto registerDto) {
         log.info("Received registration request for username: {}", registerDto.getUsername());
-        if(registerDto.getRole().equalsIgnoreCase("Seller")){
-            Seller seller = Seller.builder()
-                    .sellerName(registerDto.getFirstname()+" "+registerDto.getLastname())
-                    .address(registerDto.getAddress())
-                    .balance(BigDecimal.valueOf(0))
-                    .phoneNumber(registerDto.getPhoneNumber())
-                    .status(TypeOfUser.SELLER)
-                    .password(passwordEncoder.encode(registerDto.getPassword()))
-                    .username(registerDto.getUsername())
-                    .email(registerDto.getEmail())
-                    .build();
-            sellerService.save(seller);
-            log.info("Successfully saved seller id:"+seller.getSellerId());
-            return seller;
-        }
-        else {
-            User user = User.builder()
-                    .email(registerDto.getEmail())
-                    .address(registerDto.getAddress())
-                    .firstname(registerDto.getFirstname())
-                    .lastname(registerDto.getLastname())
-                    .phoneNumber(registerDto.getPhoneNumber())
-                    .password(passwordEncoder.encode(registerDto.getPassword()))
-                    .username(registerDto.getUsername())
-                    .status(TypeOfUser.REGISTERED_USER)
-                    .build();
+        switch (registerDto.getRole().toUpperCase()){
+            case SELLER_ROLE:
+                registerSeller(registerDto);
+                break;
 
-            userRepository.save(user);
-            basketService.save(basketService.createBasket(user));
-            log.info("Before card save");
-            cardService.save(user);
-            log.info("User registered successfully with username: {}", user.getUsername());
-            return user;
+
+            case REGISTERED_USER_ROLE:
+                registerUser(registerDto);
+                break;
+
+            default:
+                throw new ServiceException(
+                        String.format(ErrorMessage.ROLE_IS_NOT_FOUND.getMessage(), registerDto.getRole()),
+                        ErrorMessage.ROLE_IS_NOT_FOUND.getStatus()
+                );
         }
+        return registerDto;
+    }
+    private void registerSeller(RegisterDto registerDto) {
+        sellerValidator.validate(registerDto);
+
+        Seller seller = Seller.builder()
+                .username(registerDto.getUsername())
+                .email(registerDto.getEmail())
+                .phoneNumber(registerDto.getPhoneNumber())
+                .sellerName(registerDto.getFirstname() + " " + registerDto.getLastname())
+                .status(TypeOfUser.SELLER)
+                .address(registerDto.getAddress())
+                .balance(DEFAULT_BALANCE)
+                .password(passwordEncoder.encode(registerDto.getPassword()))
+                .build();
+
+        sellerService.save(seller);
+
+        log.info("Seller registered successfully with username: {}", seller.getUsername());
     }
 
+    private void registerUser(RegisterDto registerDto) {
+        userValidator.validate(registerDto);
+
+        User user = User.builder()
+                .username(registerDto.getUsername())
+                .email(registerDto.getEmail())
+                .phoneNumber(registerDto.getPhoneNumber())
+                .firstname(registerDto.getFirstname())
+                .lastname(registerDto.getLastname())
+                .status(TypeOfUser.REGISTERED_USER)
+                .address(registerDto.getAddress())
+                .password(passwordEncoder.encode(registerDto.getPassword()))
+                .build();
+
+        userService.save(user);
+
+        Basket bt = basketService.createBasket(user);
+        basketService.save(bt); // Create a basket for a user
+
+        log.info("Successfully created basket for {}", user.getUsername());
+
+        cardService.save(user); // Create a card for a user
+
+        log.info("Successfully created card for {}", user.getUsername());
+        log.info("User registered successfully with username: {}", user.getUsername());
+    }
+
+
+
+
+
     @Override
-    public JwtAuthenticationResponseDto login(LoginDto loginDto) {
+    public JwtAuthenticationResponseDto login(LoginDto loginDto){
         log.info("Received authentication request for username: {}", loginDto.getUsername());
+        UserDetails userOrSeller = getUserDetails(loginDto.getUsername());
 
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        loginDto.getUsername(),
-                        loginDto.getPassword()
-                )
-        );
-
-        Optional<User> user = userRepository.findByUsername(loginDto.getUsername());
-        Optional<Seller> seller = sellerService.getSellerByUsername(loginDto.getUsername());
-        UserDetails userOrSeller = null;
-        if (user.isEmpty())
-            userOrSeller = (UserDetails) sellerService.getSellerByUsername(loginDto.getUsername()).orElseThrow();
-        else if (seller.isEmpty())
-            userOrSeller = userRepository.findByUsername(loginDto.getUsername()).orElseThrow();
+        if(!passwordEncoder.matches(loginDto.getPassword(), userOrSeller.getPassword()))
+            throw new ServiceException(
+                    String.format(ErrorMessage.PASSWORD_IS_WRONG.getMessage(), loginDto.getPassword()),
+                    ErrorMessage.PASSWORD_IS_WRONG.getStatus()
+            );
 
         String jwt = JwtRepository.generateToken(userOrSeller);
         String refreshToken = JwtRepository.generateRefreshToken(new HashMap<>(), userOrSeller);
 
-        assert userOrSeller != null;
-        log.info("User authenticated successfully with email: {}", userOrSeller.getUsername());
+        authenticateUser(loginDto.getUsername(), loginDto.getPassword());
+
+        log.info("Successfully logged in as {}", userOrSeller.getUsername());
+
         return JwtAuthenticationResponseDto.builder()
+                .timestamp(new Date())
+                .username(userOrSeller.getUsername())
                 .accessToken(jwt)
                 .refreshToken(refreshToken)
                 .build();
     }
 
-    public JwtAuthenticationResponseDto refreshToken(RefreshTokenRequestDto refreshTokenRequest) throws JwtTokenExpiredException {
+    private UserDetails getUserDetails(String username) {
+        User user = userService.findByUsernameWithoutThrow(username).orElse(null);
+        Seller seller = sellerService.findByUsernameWithoutThrow(username).orElse(null);
+        return (user == null) ? seller : user;
+    }
+    private void authenticateUser(String username, String password) {
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(username, password)
+        );
+    }
+
+    public JwtAuthenticationResponseDto refreshToken(RefreshTokenRequestDto refreshTokenRequest) {
         log.info("Received refresh token request");
+        String username;
+        try {
+            username = jwtParser.extractUsername(refreshTokenRequest.getRefreshToken());
+        }
+        catch (SignatureException | ExpiredJwtException | MalformedJwtException ex){
+            throw new ServiceException(
+                    ErrorMessage.TOKEN_IS_INVALID_OR_EXPIRED.getMessage(),
+                    ErrorMessage.TOKEN_IS_INVALID_OR_EXPIRED.getStatus()
+            );
+        }
 
-        String username = jwtParser.extractUsername(refreshTokenRequest.getRefreshToken());
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new EntityNotFoundException("User with this username was not found")
-                );
-        if(jwtValidator.isTokenExpired(refreshTokenRequest.getRefreshToken()))
-            throw new JwtTokenExpiredException("Refresh token is expired");
-
-        if(!jwtValidator.isTokenValid(refreshTokenRequest.getRefreshToken(), user))
-            throw new JwtIsInvalid("Refresh token is invalid");
-
-        String jwt = JwtRepository.generateToken(user);
-
+        User user = userService.findByUsername(username);
+        Seller seller = sellerService.findByUsername(username);
+        boolean isUser = seller == null;
+        return generateResponse(isUser ? user : seller, refreshTokenRequest.getRefreshToken());
+    }
+    private JwtAuthenticationResponseDto generateResponse(UserDetails userOrSeller, String refreshToken) {
+        String jwt = JwtRepository.generateToken(userOrSeller);
         log.info("Updated access token expiration date with refresh token.");
 
         return JwtAuthenticationResponseDto.builder()
+                .timestamp(new Date())
+                .username(userOrSeller.getUsername())
                 .accessToken(jwt)
-                .refreshToken(refreshTokenRequest.getRefreshToken())
+                .refreshToken(refreshToken)
                 .build();
     }
+
 
 }

@@ -1,9 +1,14 @@
 package com.example.test.service;
 
+import com.example.test.enums.ErrorMessage;
+import com.example.test.exceptions.ServiceException;
+import com.example.test.model.Product;
 import com.example.test.model.Seller;
+import com.example.test.repository.ProductRepository;
 import com.example.test.repository.SellerRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -13,22 +18,26 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class SellerService {
     private final SellerRepository sellerRepository;
-
-    public List<Object> getAllSeller(){
-        return sellerRepository.getAllSellerWithProducts();
-    }
-
-    public Optional<Seller> getBySellerId(Long sellerId){
-        return sellerRepository.findBySellerId(sellerId);
-    }
+    private final ProductRepository productRepository;
 
     public List<Seller> findAll(){
         return sellerRepository.findAll();
     }
 
-    public Optional<Seller> getSellerByUsername(String username){
+    @Transactional
+    public Seller findByUsername(String username){
+        return sellerRepository.findByUsername(username).orElseThrow(() ->
+                new ServiceException(
+                        String.format(ErrorMessage.SELLER_IS_NOT_FOUND.getMessage(), username),
+                        ErrorMessage.SELLER_IS_NOT_FOUND.getStatus()
+                )
+        );
+    }
+
+    public Optional<Seller> findByUsernameWithoutThrow(String  username){
         return sellerRepository.findByUsername(username);
     }
+
     public Optional<Seller> getSellerByEmail(String email){
         return sellerRepository.findByEmail(email);
     }
@@ -39,4 +48,9 @@ public class SellerService {
     public void save(Seller seller){
         sellerRepository.save(seller);
     }
+
+    public void deleteProductByProductId(Long productId){
+        productRepository.deleteProductByProductId(productId);
+    }
+
 }

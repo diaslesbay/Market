@@ -25,7 +25,6 @@ public class BasketProduct {
     @Column(name = "id")
     private Long id;
 
-//    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "product_id")
     @OneToOne
     private Product product;

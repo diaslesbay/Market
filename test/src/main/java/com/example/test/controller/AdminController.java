@@ -3,6 +3,7 @@ package com.example.test.controller;
 import com.example.test.service.SellerService;
 import com.example.test.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,10 +14,14 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
+@PreAuthorize("hasAuthority('ADMIN')")
 @RequestMapping("/admin")
 public class AdminController {
     private final UserService userService;
     private final SellerService sellerService;
+
+
+
     @GetMapping("/users")
     public List<Map<String, String>> seeAllUsers(){
         return userService.findAll().stream()

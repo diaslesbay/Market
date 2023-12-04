@@ -1,39 +1,55 @@
 package com.example.test.validator;
 
 import com.example.test.dto.RegisterDto;
-import com.example.test.model.User;
+import com.example.test.enums.ErrorMessage;
+import com.example.test.exceptions.ServiceException;
 import com.example.test.repository.UserRepository;
+import com.example.test.service.SellerService;
+import com.example.test.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.validation.Errors;
-
-import org.springframework.validation.Validator;
 @Component
 @RequiredArgsConstructor
-public class UserValidator implements Validator {
-    private final UserRepository userRepository;
+public class UserValidator {
+    private final UserService userService;
+    private final SellerService sellerService;
 
-    @Override
-    public boolean supports(Class<?> clazz) {
-        return clazz.equals(User.class);
+    public void validate(RegisterDto signUpRequest) {
+        String username = signUpRequest.getUsername();
+        String email = signUpRequest.getEmail();
+        String phoneNumber = signUpRequest.getPhoneNumber();
+
+        sellerService.findByUsernameWithoutThrow(username)
+                .ifPresent(u -> throwUsernameAlreadyExistsException(username));
+
+        userService.findByUsernameWithoutThrow(username)
+                .ifPresent(u -> throwUsernameAlreadyExistsException(username));
+
+        userService.findByEmail(email)
+                .ifPresent(u -> throwEmailAlreadyExistsException(email));
+
+        userService.findByPhoneNumber(phoneNumber)
+                .ifPresent(u -> throwPhoneNumberAlreadyExistsException(phoneNumber));
     }
 
-
-    @Override
-    public void validate(Object target, Errors errors) {
-        RegisterDto signUpRequest = (RegisterDto) target;
-        var a = userRepository.findByUsername(signUpRequest.getUsername()).isPresent();
-        var b = userRepository.findByEmail(signUpRequest.getEmail()).isPresent();
-        var c = userRepository.findByPhoneNumber(signUpRequest.getPhoneNumber()).isPresent();
-
-        if (a == true)
-            errors.rejectValue("username", "", "User with that name already exists");
-        else if (b == true)
-            errors.rejectValue("email", "", "User with that email already exists");
-        else if (c == true)
-            errors.rejectValue("phoneNumber", "", "User with that phone number already exists");
-
+    private void throwUsernameAlreadyExistsException(String username) {
+        throw new ServiceException(
+                String.format(ErrorMessage.USERNAME_IS_ALREADY_EXIST.getMessage(), username),
+                ErrorMessage.USERNAME_IS_ALREADY_EXIST.getStatus()
+        );
     }
 
+    private void throwEmailAlreadyExistsException(String email) {
+        throw new ServiceException(
+                String.format(ErrorMessage.EMAIL_IS_ALREADY_EXIST.getMessage(), email),
+                ErrorMessage.EMAIL_IS_ALREADY_EXIST.getStatus()
+        );
+    }
+
+    private void throwPhoneNumberAlreadyExistsException(String phoneNumber) {
+        throw new ServiceException(
+                String.format(ErrorMessage.PHONE_NUMBER_IS_ALREADY_EXIST.getMessage(), phoneNumber),
+                ErrorMessage.PHONE_NUMBER_IS_ALREADY_EXIST.getStatus()
+        );
+    }
 }

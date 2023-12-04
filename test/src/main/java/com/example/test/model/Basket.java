@@ -1,16 +1,14 @@
 package com.example.test.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.engine.internal.Cascade;
 
 import javax.persistence.*;
 import java.util.List;
 
 @Entity
-@Data
+@Getter
+@Setter
 @Table(name = "baskets")
 @Builder
 @NoArgsConstructor
@@ -20,9 +18,9 @@ public class Basket {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long basketId;
 
-    @OneToMany(mappedBy = "id",cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "id")
     private List<BasketProduct> basketProducts;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne
     private User user;
 }
